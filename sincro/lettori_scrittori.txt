@@ -47,7 +47,7 @@ SCRITTORI() {
 
         wait(mutex_CS)
         totwrite--      // decrementa il numero di scrittori in attesa
-        runwrite--      // Lo scrittore termina la scrittura
+        runwrite--      // lo scrittore termina la scrittura
         while(runread < totread)
             runread++
             signal(reading)
@@ -56,7 +56,7 @@ SCRITTORI() {
             runwrite = 1
             signal(writing)
         }
-        signal(mutex_CS)  // Esce dalla sezione critica
+        signal(mutex_CS)  // esce dalla sezione critica
     }
 }
 
