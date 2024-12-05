@@ -1,0 +1,62 @@
+totread = 0;
+totwrite = 0;
+runread = 0;
+runwrite = 0;
+
+
+LETTORI() {
+    repeat {
+        wait(mutex_CS)
+        totread++   // incrementa i lettori in attesa
+        if (runwrite == 0) { // se non ci sono scrittori attivi
+            runread++   // incrementa i lettori attivi
+            signal(reading)  // permette ad altri lettori di accedere
+        }
+        signal(mutex_CS)
+
+        wait(reading)  // aspetta il permesso di leggere
+
+        // operazione di lettura
+        leggere_dati()
+
+        wait(mutex_CS)
+        totread--   // lettore esce dalla lista dei lettori in attesa
+        runread--   // lettore termina
+        if (runread = 0 && totwrite > runwrite){ // se non ci sono piu' lettori attivi e ci sono scrittori in attesa, da priorita' ai scrittori
+           runwrite = 1 // attiva uno scrittore
+           signal(writing)
+        }
+        signal(mutex_CS)
+    }
+}
+
+
+SCRITTORI() {
+    repeat {
+        wait(mutex_CS)
+        totwrite++  // incrementa il numero di scrittori in attesa
+        if (runread == 0 && runwrite == 0) { // se non ci sono lettori o scrittori attivi
+            runwrite = 1  // lo scrittore diventa attivo
+            signal(writing)  // permette a sé stesso di accedere
+        }
+        signal(mutex_CS)
+
+        wait(writing)  // aspetta il permesso per accedere al database
+
+        // operazione di scrittura
+
+        wait(mutex_CS)
+        totwrite--      // decrementa il numero di scrittori in attesa
+        runwrite--      // Lo scrittore termina la scrittura
+        while(runread < totread)
+            runread++
+            signal(reading)
+
+        if(unread = 0 && totwrite > runwrite){
+            runwrite = 1
+            signal(writing)
+        }
+        signal(mutex_CS)  // Esce dalla sezione critica
+    }
+}
+

@@ -1,0 +1,26 @@
+PRODUTTORE(){
+
+    repeat{
+
+       wait(empty) // aspetta che ci sia spazio nel buffer
+
+       buffer[prod_ptr] = ... // inserisce elemento nel buffer
+       prod_ptr = (prod_ptr + 1)%N // avanza l'indice
+
+       signal(full) // segnala che c'e' un nuovo elemento disponibile
+    }
+}
+
+
+CONSUAMTORE(){
+
+    repeat{
+
+       wait(full) // aspetta
+
+       x = buffer[prod_ptr]
+       prod_ptr = (cons_ptr + 1)%N
+
+       signal(empty)
+    }
+}

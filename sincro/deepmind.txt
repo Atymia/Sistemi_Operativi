@@ -1,0 +1,62 @@
+Nei laboratori di DeepMind a Londra, ci sono N ricercatori che, dopo aver terminato il proprio lavoro, ripongono i propri manuali in pila sulla propria scrivania. Una schiera di K < N robot, si muove tra le scrivanie per prelevare i manuali e riporli negli slot liberi di tre librerie.
+Se una libreria non contiene slot liberi per tutti i libri che il robot deve riporre, quest’ultimo passa ad esaminare la libreria successiva.
+L’accesso alle librerie deve avvenire in modo esclusivo.
+Una volta che tutti i robot hanno esaminato tutte le librerie e/o riposto tutti i libri, quelli che non sono riusciti a riporre i propri libri accedono ad una quarta libreria situata in un’altra stanza, uno per volta, per riporre i propri manuali (si assume che l’ultima libreria abbia slot per tutti i libri di ciascun robot).
+Inoltre, questi ultimi robot riprendono il giro delle scrivanie fino a quando non vi sono più manuali sulle scrivanie ed accederanno direttamente alla grande libreria nella stanza.
+Si costruisca una soluzione che coordini l’accesso alle librerie da parte dei robot, usando gli opportuni meccanismi di sincronizzazione.
+
+DATI
+manuali[N];
+manuali_rimasti;
+robot_raccoglitori[K];
+spazio_libreria[3];
+
+
+RICERCATORE(ric_id) {
+    for (i = 0; i < M; i++) {  // posizionano M manuali sulle scrivanie
+        wait(mutex_CS)
+        manuali[ric_id]++ // incrementa il numero di manuali sulla scrivania, del ricercatore[id]
+
+        manuali_rimasti++ // incrementa il numero di manuali da raccogliere
+
+        signal(mutex_CS)
+    }
+}
+
+ROBOT(robot_id){
+
+    while(1){
+        wait(mutex_CS);
+        if(manuali_rimasti == 0){ // i manuali da raccogliere sono finiti
+           signal(mutex_CS);
+        }
+
+        for(ric_id = 0; ric_id < N; ric_id++){
+           if(manuali_rimasti > 0) // ci sono libri sulla scrivania
+              robot_raccoglitori[robot_id] += manuali[ricercatore_id]; // i robot raccolgono i manuali dalle scrivanie
+              manuali_rimasti -= manuali[ric_id] // aggiorna il conteggio dei manuali
+              manuali[ric_id] = 0; // tutti i manuali sono stati raccolti
+              signal(mutex_CS)
+            }
+        }
+
+        for(libreria_id = 0; libreria_id < 3; libreria_id++){ // il roboto passa a posare i manuali nelle librerie
+           wait(mutex_CS);
+           if(spazio_libreria[libreria_id] >= robot_raccoglitori[robot_id]){ // controlla se nella lbreria[id] c'e' spazio
+
+              spazio_libreria[libreria_id] -= robot_raccoglitori[robot_id] // aggiorna lo spazio della libreria
+
+              robot_raccoglitori[robot_id] = 0; // i robot sono svuotati
+              signal(mutex_CS);
+           }
+           signal(mutex_CS)
+        }
+
+        // si lavora sulla quarta libreria
+        if(robot_raccoglitori[robot_id] > 0){ // se sono presenti ancora dei manuali
+           wait(mutex_CS);
+           robot_raccoglitori[robot_id] = 0; // svuota il robot
+           signal(mutex_CS);
+        }
+    }
+}

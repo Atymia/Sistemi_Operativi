@@ -1,0 +1,34 @@
+Risolvere il problema produttori-consumatori con N buffer usando
+le variabili di condizione
+• Scrivere separatamente le funzioni inserisci() e preleva() invocate dai
+produttori e i consumatori, rispettivamente
+
+PRODUTTORE(){
+
+    wait(vuoto) // semaforo vuoto tiene traccia degli spazi disponibili nel buffer
+    // se il buffer e' pieno(vuoto == 0), il produttore si sblocca in attesa che un consumatore liberi lo spazio
+    //wait(vuoto) decrementa il semaforo di uno, riservando uno spazio
+
+    wait(mutex) // un solo produttore o consumatore accede al buffere contmeporaneamente
+
+    buffer[prod_ptr] = item // inserisce l'eleemnto item nella posizione attuale dell'indice prod_ptr
+
+    prod_ptr = (prod_ptr +1)%n // incrementa l'indice di uno per puntare alla prossima posizione libera, il modulo garantisce che l'indice rimane nei limiti del buffer di dimensione N
+
+    signal(mutex)
+    signal(pieno) // incrementa il semaforo pieno per indicare che e' statoa ggiunto un elemento nel buffer
+}
+
+
+CONSUMATORE(){
+
+    wait(pieno)   // aspetta che ci sia almeno un elemento nel buffer
+    wait(mutex)
+
+    item = buffer[cons_ptr]  // il consuamtore legge l'elemento dalla posizione corrente dell'indice cons_ptr del buffer
+    cons_ptr = (cons_ptr + 1)%n
+
+    signal(mutex)
+
+    return item
+}

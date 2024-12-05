@@ -1,0 +1,63 @@
+In una pizzeria, due pizzaioli sfornano continuamente pizze che
+pongono di volta in volta in uno di N piatti disponibili su un bancone.
+I piatti sono prelevati da M (M<N) camerieri che provvedono a
+servirle ai tavoli. Ciascun cameriere può portare:
+• 2 pizze per volta, se disponibili;
+• in caso di affollamento, i camerieri preleveranno 3 pizze per volta.
+Fornire una soluzione con semafori e discutere eventuali problemi di
+starvation/deadlock.
+
+N = numero piatti
+
+M = numero camerieri
+
+
+PIZZAIOLO(){
+
+    while(1){
+
+       prepara_pizza();
+
+       wait(piatti_vuoti) // aspetta almeno un piatto vuoto per posizionare la pizza
+
+       wait(mutex_CS)
+       for(i = 0; i < n; i++){
+          if(piatti[i] == 0){ // cerca un piatto vuoto
+            piatti[i] = 1; // il piatto contiene una pizza
+            pizze_disponibili++;
+            signal(pizze_pronte)
+            signal(mutex_CS)
+          }
+       }
+    }
+}
+
+
+CAMERIER(ID){
+
+    while(1){
+
+       wait(mutex_CS)
+       if(pizze_disponibili >= 3){
+          pizze_da_prendere = 3
+       }else{
+          pizze_da_prendere = pizze_disponibili;
+       }
+       signal(mutex_CS);
+
+       for(i = 0; i < pizze_da_prendere; i++){
+          wait(pizze_pronte)
+       }
+
+       wait(mutex_CS)
+       for(i = 0; i < n && pizze_da_prendere > 0; i++){
+          if(piatti[i] == 1){ // se il piatto contiene una pizza
+             piatti[i] = 0; // svuota il piatto
+             pizze_da_prendere--;
+             pizze_disponibili--;
+             signal(piatti_vuoti)
+             signal(mutex_CS)
+          }
+       }
+    }
+}

@@ -1,0 +1,43 @@
+I un negozio di barbiere c'e':
+• Un barbiere
+• N sedie per i clienti in attesa
+• 1 poltrona da barbiere
+Specifiche: • Se non ci sono clienti, il barbiere si addormenta sulla poltrona
+• Quando arriva, un cliente sveglia il barbiere e si fa tagliare i capelli sulla
+poltrona
+• Se arriva un cliente mentre il barbiere sta tagliando i capelli ad un altro
+cliente, il cliente attende su una delle sedie libere
+• Se tutte le sedie sono occupate, il cliente, contrariato, se ne va!
+
+
+BARBIERE(){
+
+    repeat{
+
+       wait(utente) // aspetta che ci sia un cliente
+       wait(mutex_CS)
+       coda--  // decrementa il numero di clienti in attesa
+       signal(taglio)  // segnala al cliente che e' pronto per il taglio
+       signal(mutex_CS)
+
+       {taglia capelli}
+
+    }
+}
+
+
+CLIENTE(){
+
+    repeat{
+
+       wait(mutex_CS)
+       if(coda < sedie){ // controlla se ci sono sedie libere
+            coda++  // incrementa il numero di clienti in attesa
+            signal(utente) // segnala che c'e' un cliente
+            signal(mutex_CS) //
+            wait(taglio) // aspetta che il barbiere sia pronto
+       }else{
+          signal(mutex_CS) // rilascia se non ci sono sedie libere
+       }
+    }
+}

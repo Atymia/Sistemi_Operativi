@@ -1,0 +1,27 @@
+Un produttore puo' scrivere in un buffer, e il buffer puo' leggere
+
+mutex = 1
+empty = n
+full = 0
+
+PRODUTTORE(){
+
+    repeat{
+
+      wait(empty)
+
+      signal(full)
+    }
+}
+
+
+
+CONSUMATORE(){
+
+    repeat{
+
+       wait(full)
+
+       signal(empty)
+    }
+}

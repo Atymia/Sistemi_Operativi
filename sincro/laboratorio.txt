@@ -1,0 +1,67 @@
+Un laboratorio di ricerca è dotato di N postazioni, di cui K a disposizione del personale di tipo «A» e le rimanenti N-K a disposizione del personale di tipo «B». L’accesso al laboratorio è gestito da un coordinatore che assegna le postazioni secondo la seguente politica:
+un utente di tipo «A» accede al laboratorio solo se una delle K postazioni è libera, altrimenti va via; un utente di tipo «B» accede al laboratorio solo se una delle N-K postazioni è libera, altrimenti si mette in attesa. Le postazioni riservate agli utenti di tipo «B» non possono essere occupate per più di M minuti, alla scadenza dei quali l’utente libera la postazione.
+
+
+semaforo posto_A = K
+semaforo posto_B = N-K
+
+COORDINATORE(){
+
+    repeat{
+
+       wait(mutex_CS)
+
+       if(posto_A > 0){
+          signal(posto_A)
+       }else{
+       }
+
+       if(posto_B > 0){
+          signal(posto_B)
+       }else{
+          // se non ci sono postazioni libere, mette B in attesa
+          wait(attesa_B) // (semaforo per l'attesa) aspetta che si liberi una postazione
+       }
+
+       signal(mutex_CS)
+    }
+}
+
+PERSONALE_A(ID){
+
+    wait(mutex_CS)
+
+    if(posto_A > 0){
+       wait(posto_A) // A si insedia in una postazione
+
+       {svolge lavoro}
+
+       signal(posto_A) // libera la postazione
+    }else{
+
+       {utente esce}
+    }
+
+    signal(mutex_CS)
+}
+
+
+PERSONALE_B(ID){
+
+    wait(mutex_CS){
+
+      if(posto_B > 0){ // utente B vede se c'e' posto
+         wait(posto_B) // occupa un posto
+
+         avvia_timer(ID, M)
+
+         {svolge lavoro}
+
+         signal(posto_B)
+      }else{
+         // se non c'e' posto, B si mette in attesa
+         wait(posto_B)
+      }
+      signal(mutex_CS)
+    }
+}
