@@ -1,6 +1,5 @@
 Un produttore puo' scrivere in un buffer, e il buffer puo' leggere
-
-mutex = 1
+buffer[n-1]
 empty = 1
 full = 0
 
@@ -9,6 +8,8 @@ PRODUTTORE(){
     repeat{
 
       wait(empty)
+
+      buffer[0] = ...
 
       signal(full)
     }
@@ -21,6 +22,8 @@ CONSUMATORE(){
     repeat{
 
        wait(full)
+
+       x = buffer[0]
 
        signal(empty)
     }
