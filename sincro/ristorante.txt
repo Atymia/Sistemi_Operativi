@@ -7,79 +7,79 @@ L'addetto svuota, pulisce il contenitore che ha il maggior numero di ripiani lib
 
 
 CLIENTE() {
-  // Arrivo nel ristorante, attendo che sia disponibile un contenitore
+  // arrivo nel ristorante, attendo che sia disponibile un contenitore
   wait(contenitori);
 
-  // Utilizzo un indice per capire a quale contenitore sto facendo riferimento
+  // utilizzo un indice per capire a quale contenitore sto facendo riferimento
   wait(sem_CS);
-  contenitore_loc = index++; // Incremento l'indice globale e lo assegno alla variabile locale contenitore_loc
-  signal(sem_CS); // Rilascio il semaforo della sezione critica
+  contenitore_loc = index++; // incremento l'indice globale e lo assegno alla variabile locale contenitore_loc
+  signal(sem_CS);
 
-  // Attendo se non ci sono vassoi puliti, altrimenti prendo il vassoio
+  // attendo se non ci sono vassoi puliti, altrimenti prendo il vassoio
   wait(vassoio_pulito[contenitore_loc]);
-  { Prendi il vassoio } // Prendo un vassoio pulito dal contenitore assegnato
+  { prendi il vassoio }
 
-  // Rilascio il contenitore
+  // rilascio il contenitore
   wait(sem_CS);
-  index--; // Decremento l'indice globale
-  signal(sem_CS); // Rilascio il semaforo della sezione critica
-  signal(contenitori); // Segnalo che il contenitore è di nuovo disponibile
+  index--;
+  signal(sem_CS);
+  signal(contenitori); // il contenitore è di nuovo disponibile
 
-  { Mangia } // Il cliente consuma il pasto
+  { mangia } // consuma il pasto
 
-  // Dopo aver mangiato, poso il vassoio in un contenitore
+  // dopo aver mangiato, poso il vassoio in un contenitore
   wait(contenitori);
 
   wait(sem_CS);
-  contenitore_loc = index++; // Incremento l'indice globale e lo assegno alla variabile locale contenitore_loc
+  contenitore_loc = index++; // incremento l'indice globale e lo assegno alla variabile locale contenitore_loc
   signal(sem_CS);
 
-  // Poso il vassoio precedentemente preso
+  // poso il vassoio precedentemente preso
   signal(vassoio_sporco[contenitore_loc]);
-  { Posa il vassoio } // Il cliente ripone il vassoio sporco nel contenitore
+  { posa il vassoio } // il cliente ripone il vassoio sporco nel contenitore
 
   wait(sem_CS);
-  ripiani_sporchi[contenitore_loc]++; // Incremento il conteggio dei ripiani sporchi nel contenitore assegnato
-  index--; // Decremento l'indice globale
+  ripiani_sporchi[contenitore_loc]++; // incremento il conteggio dei ripiani sporchi nel contenitore assegnato
+  index--; // decremento l'indice globale
   signal(sem_CS);
-  signal(contenitori); // Segnalo che il contenitore è di nuovo disponibile
+  signal(contenitori); // segnalo che il contenitore è di nuovo disponibile
 
-  { Esci } // Il cliente esce dal ristorante
+  { esci } // il cliente esce dal ristorante
 }
 
 
 
 CAMERIERE() {
   repeat
-    // Variabili locali per la ricerca del contenitore con più ripiani sporchi
+    // variabili locali per la ricerca del contenitore con più ripiani sporchi
     int max = 0;
     int ind = -1;
 
-    // Ricerca del contenitore con maggior numero di ripiani sporchi
+    // ricerca del contenitore con maggior numero di ripiani sporchi
     for (int i = 0; i < M; i++) {
-      wait(sem_CS); // Accedo alla sezione critica per leggere le variabili condivise
-      if (ripiani_sporchi[i] > max) { // Controllo se il numero di ripiani sporchi è maggiore del massimo attuale
-        max = ripiani_sporchi[i]; // Aggiorno il valore massimo
-        ind = i; // Aggiorno l'indice del contenitore con più ripiani sporchi
+      wait(sem_CS);
+      if (ripiani_sporchi[i] > max) { // controllo se il numero di ripiani sporchi è maggiore del massimo attuale
+        max = ripiani_sporchi[i]; // aggiorno il valore massimo
+        ind = i; // aggiorno l'indice del contenitore con più ripiani sporchi
       }
-      signal(sem_CS); // Rilascio la sezione critica
+      signal(sem_CS);
     }
 
-    if (ind != -1) { // Se c'è almeno un contenitore con ripiani sporchi
-      // Una volta trovato, pulisco tutto
+    if (ind != -1) { // se c'è almeno un contenitore con ripiani sporchi
+      // una volta trovato, pulisco tutto
       wait(contenitori);
-      { Pulisci i vassoi } // Pulisci i vassoi nel contenitore selezionato
+      { pulisci i vassoi } // pulisci i vassoi nel contenitore selezionato
 
-      // Segnalo di aver pulito il contenitore
+      // segnalo di aver pulito il contenitore
       for (int i = 0; i < max; i++) {
-        signal(vassoio_pulito[ind]); // Segnalo che un vassoio pulito è disponibile
+        signal(vassoio_pulito[ind]); // segnalo che un vassoio pulito è disponibile
       }
 
-      // Reimposto ripiani_sporchi a 0 e sblocco il contenitore
+      // reimposto ripiani_sporchi a 0 e sblocco il contenitore
       wait(sem_CS);
-      ripiani_sporchi[ind] = 0; // Resetta il conteggio dei ripiani sporchi nel contenitore selezionato
+      ripiani_sporchi[ind] = 0; // resetta il conteggio dei ripiani sporchi nel contenitore selezionato
       signal(sem_CS);
-      signal(contenitori); // Segnalo che il contenitore è di nuovo disponibile
+      signal(contenitori); // segnalo che il contenitore è di nuovo disponibile
     }
   forever
 }
